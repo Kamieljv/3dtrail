@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <!-- Include the CesiumJS JavaScript and CSS files -->
+
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.107.1/Build/Cesium/Cesium.js"></script>
+
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.107.1/Build/Cesium/Widgets/widgets.css"
+        rel="stylesheet">
+
+</head>
+
+<body>
+
+    <div id="cesiumContainer" class="fullSize"></div>
+    <div id="toolbar"></div>
+
+    <script type="module">
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxNTFhYTcwNC1mOWYxLTRjZjktOTE3YS0wMTAzYmZlYTg2ZWMiLCJpZCI6MTU2NjMyLCJpYXQiOjE2OTAzODQ2MDZ9.sAoO1OWXWeAjpLqKBbwUd8IpikP_RittyVP-xG68Cic';
+
+        /**
+         * This class is an example of a custom geocoder. It provides geocoding through the OpenStreetMap Nominatim service.
+         * @alias OpenStreetMapNominatimGeocoder
+         * @constructor
+         */
+        function OpenStreetMapNominatimGeocoder() { }
+
+        /**
+         * The function called to geocode using this geocoder service.
+         *
+         * @param {string} input The query to be sent to the geocoder service
+         * @returns {Promise<GeocoderService.Result[]>}
+         */
+        OpenStreetMapNominatimGeocoder.prototype.geocode = function (input) {
+            const endpoint = "https://nominatim.openstreetmap.org/search";
+            const resource = new Cesium.Resource({
+                url: endpoint,
+                queryParameters: {
+                    format: "json",
+                    q: input,
+                },
+            });
+
+            return resource.fetchJson().then(function (results) {
+                let bboxDegrees;
+                return results.map(function (resultObject) {
+                    bboxDegrees = resultObject.boundingbox;
+                    return {
+                        displayName: resultObject.display_name,
+                        destination: Cesium.Rectangle.fromDegrees(
+                            bboxDegrees[2],
+                            bboxDegrees[0],
+                            bboxDegrees[3],
+                            bboxDegrees[1]
+                        ),
+                    };
+                });
+            });
+        };
+
+        // Initialize the Cesium Viewer in the HTML element with the `cesiumContainer` ID.
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            terrain: Cesium.Terrain.fromWorldTerrain(),
+            geocoder: new OpenStreetMapNominatimGeocoder(),
+            homeButton: false,
+            timeline: false,
+            scene3DOnly: true,
+            vrButton: false,
+            baseLayerPicker: false,
+            infoBox: false,
+            animation: false, 
+        });
+
+
+        viewer.geocoder.viewModel.searchText = "Philadelphia";
+        viewer.geocoder.viewModel.search();
+
+    </script>
+    <style>
+        @import url(../templates/bucket.css);
+
+        #toolbar {
+            background: rgba(42, 42, 42, 0.8);
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        #toolbar input {
+            vertical-align: middle;
+            padding-top: 2px;
+            padding-bottom: 2px;
+        }
+    </style>
+    </div>
+
+</body>
+
+</html>
