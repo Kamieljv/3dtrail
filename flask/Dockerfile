@@ -1,10 +1,9 @@
 FROM python:3.9.2-alpine
 
+# get curl for healthchecks
+RUN apk update && apk add curl build-base
 # upgrade pip
 RUN pip install --upgrade pip
-
-# get curl for healthchecks
-RUN apk add curl
 
 # permissions and nonroot user for tightened security
 RUN adduser -D nonroot

@@ -1,6 +1,17 @@
+import os
 from flask import Flask, request, jsonify, render_template
+from sqlalchemy import create_engine
+from config import Config
 
+# Initialize app and load config
 app = Flask(__name__)
+
+app.config.from_object(Config)
+
+print(app.config)
+
+# Connect to database
+engine = create_engine(app.config['DATABASE_URI'])
 
 @app.route('/')
 def hello():
